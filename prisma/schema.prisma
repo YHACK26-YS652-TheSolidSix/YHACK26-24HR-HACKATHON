@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  BUSINESS
+  OFFICER
+  ADMIN
+}
+
+enum ChecklistStatus {
+  pending
+  applied
+  approved
+  rejected
+}
+
+enum ApplicationStatus {
+  submitted
+  under_review
+  info_requested
+  approved
+  rejected
+}
+
+enum GrievanceStatus {
+  open
+  in_progress
+  resolved
+  escalated
+}
+
+enum SchemeApplicationStatus {
+  draft
+  submitted
+  approved
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole
+
+  businessId   String?
+  departmentId String?
+
+  business   Business?   @relation(fields: [businessId], references: [id])
+  department Department? @relation(fields: [departmentId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Business {
+  id       String @id @default(cuid())
+  name     String
+  sector   String
+  district String
+  state    String @default("Tamil Nadu")
+
+  users              User[]
+  checklists         Checklist[]
+  documents          Document[]
+  applications       Application[]
+  grievances         Grievance[]
+  schemeApplications SchemeApplication[] // ✅ ADD THIS LINE
+
+  createdAt DateTime @default(now())
+}
+
+model Department {
+  id   String @id @default(cuid())
+  code String @unique
+  name String
+
+  officers     User[]
+  requirements ComplianceRequirement[]
+}
+
+model ComplianceRequirement {
+  id   String @id @default(cuid())
+  code String @unique
+  name String
+
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  checklistItems ChecklistItem[]
+}
+
+model Checklist {
+  id         String @id @default(cuid())
+  businessId String
+
+  business Business        @relation(fields: [businessId], references: [id])
+  items    ChecklistItem[]
+}
+
+model ChecklistItem {
+  id            String @id @default(cuid())
+  checklistId   String
+  requirementId String
+
+  status ChecklistStatus @default(pending)
+
+  checklist   Checklist             @relation(fields: [checklistId], references: [id])
+  requirement ComplianceRequirement @relation(fields: [requirementId], references: [id])
+
+  applications Application[]
+}
+
+model Document {
+  id         String @id @default(cuid())
+  businessId String
+
+  name     String
+  fileUrl  String
+  fileType String
+
+  validationFlags String
+  ocrExtracted    String
+
+  business Business @relation(fields: [businessId], references: [id])
+}
+
+model Application {
+  id              String @id @default(cuid())
+  businessId      String
+  checklistItemId String
+
+  status    ApplicationStatus @default(submitted)
+  riskScore Int               @default(50)
+
+  business      Business      @relation(fields: [businessId], references: [id])
+  checklistItem ChecklistItem @relation(fields: [checklistItemId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Grievance {
+  id         String @id @default(cuid())
+  businessId String
+
+  title       String
+  description String
+  status      GrievanceStatus @default(open)
+
+  business Business @relation(fields: [businessId], references: [id])
+}
+
+model Scheme {
+  id              String @id @default(cuid())
+  name            String
+  description     String
+  eligibilityJson String
+
+  applications SchemeApplication[]
+}
+
+model SchemeApplication {
+  id         String @id @default(cuid())
+  schemeId   String
+  businessId String
+
+  status SchemeApplicationStatus @default(draft)
+
+  scheme   Scheme   @relation(fields: [schemeId], references: [id])
+  business Business @relation(fields: [businessId], references: [id])
+}
+
+model AuditLog {
+  id            String @id @default(cuid())
+  applicationId String
+
+  action    String
+  actor     String
+  timestamp DateTime @default(now())
+}
