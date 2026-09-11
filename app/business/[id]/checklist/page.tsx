@@ -65,20 +65,60 @@ export default function ChecklistPage({
 
   if (loading) {
     return (
-      <main
-        style={{
-          maxWidth: "800px",
-          margin: "40px auto",
-          padding: "20px",
-        }}
-      >
-        <h1>Generating your checklist...</h1>
-        <p>
-          We are preparing the compliance requirements for
-          your business.
-        </p>
-      </main>
-    );
+  <main
+    style={{
+      maxWidth: "800px",
+      margin: "40px auto",
+      padding: "20px",
+      backgroundColor: "#020617",
+      color: "white",
+      minHeight: "100vh",
+    }}
+  >
+    <h1 style={{ color: "#22c55e", fontSize: "32px", marginBottom: "10px" }}>
+      Personalized Compliance Checklist
+    </h1>
+
+    <p style={{ color: "#CBD5E1", marginBottom: "20px" }}>
+      Based on your business profile, these are the compliance requirements you
+      need to complete.
+    </p>
+
+    {checklist?.items?.length === 0 ? (
+      <p style={{ color: "#CBD5E1" }}>
+        No compliance requirements were found for this business.
+      </p>
+    ) : (
+      checklist?.items?.map((item) => (
+        <div
+          key={item.id}
+          style={{
+            border: "1px solid #22C55E",
+            borderRadius: "12px",
+            padding: "20px",
+            margin: "15px 0",
+            backgroundColor: "#1E293B",
+            color: "white",
+          }}
+        >
+          <h2 style={{ color: "#4ADE80", marginBottom: "10px" }}>{item.name}</h2>
+
+          <p style={{ color: "#CBD5E1" }}>
+  <strong>Requirement:</strong> {item.requirementCode}
+</p>
+
+          <p style={{ color: "#CBD5E1" }}>
+  <strong>Department:</strong> {item.department}
+</p>
+
+          <p style={{ color: "#FACC15" }}>
+  <strong>Status:</strong> {item.status}
+</p>
+        </div>
+      ))
+    )}
+  </main>
+);
   }
 
   if (!checklist) {
@@ -124,14 +164,23 @@ export default function ChecklistPage({
           <div
             key={item.id}
             style={{
-              border: "1px solid #ddd",
-              borderRadius: "10px",
-              padding: "20px",
-              margin: "15px 0",
-              backgroundColor: "#fff",
-            }}
+  border: "1px solid #22C55E",
+  borderRadius: "12px",
+  padding: "20px",
+  margin: "15px 0",
+  backgroundColor: "#1E293B",
+  color: "#FFFFFF",
+}}
           >
-            <h2>{item.name}</h2>
+            <h2
+  style={{
+    color: "#4ADE80",
+    fontSize: "22px",
+    marginBottom: "10px",
+  }}
+>
+  {item.name}
+</h2>
 
             <p>
               <strong>Requirement:</strong>{" "}

@@ -34,7 +34,7 @@ export default function ApplicationsTimeline() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`/api/applications?businessId=${TEMP_BUSINESS_ID}`)
+    fetch("/api/applications?businessId=cmtwjep190003tlb8o6kh42il")
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {

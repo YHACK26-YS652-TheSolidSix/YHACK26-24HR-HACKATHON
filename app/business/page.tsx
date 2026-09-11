@@ -25,11 +25,7 @@ export default function BusinessPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          name,
-          sector,
-          district,
-        }),
+        body: JSON.stringify({ name, sector, district }),
       });
 
       const data = await response.json();
@@ -48,19 +44,34 @@ export default function BusinessPage() {
     }
   }
 
+  const inputStyle = {
+    width: "100%",
+    padding: "12px",
+    margin: "10px 0",
+    backgroundColor: "#1e293b",
+    color: "white",
+    border: "1px solid #334155",
+    borderRadius: "10px",
+  };
+
   return (
     <main
       style={{
-        maxWidth: "600px",
+        maxWidth: "700px",
         margin: "50px auto",
         padding: "30px",
+        backgroundColor: "#0f172a",
+        color: "white",
+        borderRadius: "16px",
       }}
     >
-      <h1>Business Onboarding</h1>
+      <h1 style={{ color: "#22c55e", fontSize: "32px", marginBottom: "10px" }}>
+        Business Onboarding
+      </h1>
 
-      <p>
-        Enter your business details to generate personalized
-        compliance requirements.
+      <p style={{ marginBottom: "20px" }}>
+        Enter your business details to generate personalized compliance
+        requirements.
       </p>
 
       <input
@@ -68,23 +79,15 @@ export default function BusinessPage() {
         placeholder="Business Name"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        style={{
-          width: "100%",
-          padding: "12px",
-          margin: "10px 0",
-        }}
+        style={inputStyle}
       />
 
       <input
         type="text"
-        placeholder="Sector e.g. Food Processing"
+        placeholder="Sector (e.g. Food Processing)"
         value={sector}
         onChange={(e) => setSector(e.target.value)}
-        style={{
-          width: "100%",
-          padding: "12px",
-          margin: "10px 0",
-        }}
+        style={inputStyle}
       />
 
       <input
@@ -92,20 +95,22 @@ export default function BusinessPage() {
         placeholder="District"
         value={district}
         onChange={(e) => setDistrict(e.target.value)}
-        style={{
-          width: "100%",
-          padding: "12px",
-          margin: "10px 0",
-        }}
+        style={inputStyle}
       />
 
       <button
         onClick={createBusiness}
         disabled={loading}
         style={{
-          padding: "12px 25px",
+          width: "100%",
+          padding: "12px",
           marginTop: "15px",
           cursor: "pointer",
+          backgroundColor: "#22c55e",
+          color: "white",
+          border: "none",
+          borderRadius: "10px",
+          fontWeight: "bold",
         }}
       >
         {loading ? "Creating..." : "Create Business"}
