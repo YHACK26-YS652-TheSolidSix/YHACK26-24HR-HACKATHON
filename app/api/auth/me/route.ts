@@ -1,49 +1,33 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { prisma } from "@/lib/prisma";
+import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
+    const authHeader = req.headers.get("authorization");
 
-    if (!token) {
+    if (!authHeader) {
       return NextResponse.json(
-        { error: "Not authenticated" },
+        { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
+    const token = authHeader.split(" ")[1];
+
     const payload = verifyToken(token);
 
     const user = await prisma.user.findUnique({
-      where: {
-        id: payload.userId,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-      },
+      where: { id: payload.userId },
     });
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
-    }
+    const { passwordHash, ...safeUser } = user!;
 
-    return NextResponse.json({
-      user,
-    });
+return NextResponse.json(safeUser);
   } catch (error) {
-    console.error("Auth check error:", error);
-
+    console.error(error);
     return NextResponse.json(
-      { error: "Invalid or expired session" },
+      { error: "Invalid token" },
       { status: 401 }
     );
   }
