@@ -1,10 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(req: NextRequest) {
+const validRoles = ["BUSINESS", "OFFICER", "ADMIN"] as const;
+
+export async function POST(request: Request) {
   try {
-    const { name, email, password, role } = await req.json();
+    const body = await request.json();
+
+    const name = body.name?.trim();
+    const email = body.email?.trim().toLowerCase();
+    const password = body.password;
+    const role = body.role;
 
     if (!name || !email || !password || !role) {
       return NextResponse.json(
@@ -13,39 +20,61 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const existing = await prisma.user.findUnique({
-      where: { email },
+    if (!validRoles.includes(role)) {
+      return NextResponse.json(
+        { error: "Invalid account type" },
+        { status: 400 }
+      );
+    }
+
+    if (password.length < 6) {
+      return NextResponse.json(
+        { error: "Password must be at least 6 characters" },
+        { status: 400 }
+      );
+    }
+
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email,
+      },
     });
 
-    if (existing) {
+    if (existingUser) {
       return NextResponse.json(
-        { error: "Email already registered" },
+        { error: "An account with this email already exists" },
         { status: 409 }
       );
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
       data: {
         name,
         email,
-        passwordHash: hashedPassword,
+        passwordHash,
         role,
       },
     });
 
     return NextResponse.json(
       {
-        message: "User registered successfully",
-        user,
+        message: "Registration successful",
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
       },
       { status: 201 }
     );
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error("Registration error:", error);
+
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Something went wrong. Please try again." },
       { status: 500 }
     );
   }
